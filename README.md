@@ -1,0 +1,2 @@
+# SpannerManager
+MSCProject
