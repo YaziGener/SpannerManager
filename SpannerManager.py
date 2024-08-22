@@ -79,7 +79,7 @@ def update_form_fields(*args):
         entry = tk.Entry(form_frame)
         entry.grid(row=i, column=1, padx=5, pady=5)
         if field_type == "DATE":
-            entry.insert(0, date.today().isoformat())  # 自动填充当前日期
+            entry.insert(0, date.today().isoformat())  # Auto-fill current date
         entries[field] = entry
 
 def insert_data():
@@ -91,7 +91,7 @@ def insert_data():
         value = entries[field].get()
         field_type = field_types[selected_table].get(field)
         if field_type == "DATE" and not value:
-            value = date.today().isoformat()  # 自动填充当前日期
+            value = date.today().isoformat()  # Auto-fill current date
         values.append(value)
 
     if any(not value for value in values):
@@ -129,13 +129,13 @@ def get_primary_key_column_and_type(table_name):
         primary_key_info = [(row[0], row[1]) for row in results]
         
     if primary_key_info:
-        return primary_key_info[0]  # 假设每个表只有一个主键
+        return primary_key_info[0]  # Assume that each table has only one primary key
     else:
         raise ValueError(f"Table {table_name} does not have a primary key.")
 
 def query_data():
     try:
-        # 清除之前的查询结果
+        # Clear previous query results
         for row in tree_query.get_children():
             tree_query.delete(row)
         
@@ -150,13 +150,13 @@ def query_data():
             print("No primary key value provided")
             return None
 
-        # 动态获取主键列名及其类型
+        # Dynamically obtain the primary key column name and its type
         primary_key_column, primary_key_type = get_primary_key_column_and_type(selected_table)
         print(f"Primary Key Column: {primary_key_column}, Type: {primary_key_type}")
-        print(f"Primary Key Value: {primary_key_value}")  # 添加这行来打印主键值
+        print(f"Primary Key Value: {primary_key_value}")  # Add this line to print the primary key value
 
         if primary_key_type == "INT64":
-            primary_key_value = int(primary_key_value)  # 确保主键值的类型正确
+            primary_key_value = int(primary_key_value)  # Make sure the primary key value is of the correct type
             param_type = spanner.param_types.INT64
         elif primary_key_type == "STRING":
             param_type = spanner.param_types.STRING
@@ -164,7 +164,7 @@ def query_data():
             raise ValueError(f"Unsupported primary key type: {primary_key_type}")
 
         query = f"SELECT * FROM {selected_table} WHERE {primary_key_column} = @primary_key_value"
-        print(f"Executing SQL Query: {query}")  # 添加这行来打印SQL查询
+        print(f"Executing SQL Query: {query}")  # Add this line to print the SQL query
 
         start_time = time.time()
         with database.snapshot() as snapshot:
@@ -176,7 +176,7 @@ def query_data():
             rows = list(results)
             end_time = time.time()
 
-            latency = (end_time - start_time) * 1000  # 以毫秒为单位的延迟
+            latency = (end_time - start_time) * 1000  # Latency in milliseconds
             print(f"Query latency: {latency:.2f} ms")
 
             if not results.metadata or not rows:
@@ -194,7 +194,7 @@ def query_data():
             for row in rows:
                 tree_query.insert("", tk.END, values=row)
 
-        return latency  # 成功时返回延迟值
+        return latency  
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -202,14 +202,14 @@ def query_data():
 
 def measure_average_latency(iterations=10):
     total_latency = 0
-    valid_iterations = 0  # 用于计算成功的查询次数
+    valid_iterations = 0  # Used to count the number of successful queries
     for i in range(iterations):
         print(f"Running iteration {i + 1}...")
-        latency = query_data()  # 调用query_data()并获取延迟值
-        print(f"Iteration {i + 1}: Latency = {latency}")  # 添加此行来打印每次迭代的延迟
-        if latency is not None:  # 确保查询成功并且获取了延迟值
+        latency = query_data()  # Call query_data() and get the latency value
+        print(f"Iteration {i + 1}: Latency = {latency}")  # Add this line to print the latency for each iteration
+        if latency is not None:  # Make sure the query succeeds and gets the latency value
             total_latency += latency
-            valid_iterations += 1  # 只有成功返回延迟时才增加计数器
+            valid_iterations += 1  # Increment the counter only if the latency is returned successfully
     
     if valid_iterations > 0:
         average_latency = total_latency / valid_iterations
@@ -224,9 +224,9 @@ def measure_average_latency(iterations=10):
     for i in range(iterations):
         try:
             if operation == "insert":
-                insert_data()  # 调用插入数据的函数
+                insert_data() 
             elif operation == "query":
-                query_data()  # 调用查询数据的函数
+                query_data()  
             successful_operations += 1
         except Exception as e:
             print(f"Operation failed at iteration {i + 1}: {str(e)}")
@@ -244,14 +244,14 @@ def measure_throughput(operation, iterations=100):
     for i in range(iterations):
         try:
             if operation == "insert":
-                insert_data()  # 调用插入数据的函数
+                insert_data()  
             elif operation == "query":
-                query_data()  # 调用查询数据的函数
+                query_data()  
             successful_operations += 1
         except Exception as e:
             print(f"Operation failed at iteration {i + 1}: {str(e)}")
         
-        # 每10次打印一次进度信息
+        # Print progress information every 10 times
         if (i + 1) % 10 == 0:
             elapsed_time = time.time() - start_time
             print(f"Completed {i + 1} operations in {elapsed_time:.2f} seconds")
